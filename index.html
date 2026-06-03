@@ -82,10 +82,16 @@
         height: calc(65vh - 54px);
         flex: none !important;
       }
+      /* Prevent iOS Safari auto-zoom on textarea focus (requires ≥16px) */
+      textarea { font-size: 16px !important; }
+      /* Larger touch targets */
+      .sticky button { min-height: 40px; }
+      /* Allow horizontal scroll on long chord lines instead of clipping */
+      #output-pane { overflow-x: auto !important; }
     }
 
     /* Button interactions */
-    button { transition: opacity 0.15s, transform 0.1s; }
+    button { transition: opacity 0.15s, transform 0.1s; touch-action: manipulation; }
     button:active { transform: scale(0.96); }
 
     /* Textarea focus ring */
@@ -117,7 +123,7 @@
       ADVERTISEMENT · 728×90
     </div>
     <div class="flex md:hidden items-center justify-center"
-         style="width:320px; height:50px; border:1px dashed var(--gold-dim); color:var(--text-muted); font-size:11px; letter-spacing:1px;">
+         style="width:min(320px,100%); height:50px; border:1px dashed var(--gold-dim); color:var(--text-muted); font-size:11px; letter-spacing:1px;">
       <!-- Replace with AdSense unit -->
       AD · 320×50
     </div>
@@ -271,7 +277,7 @@
   <div id="ad-bottom-anchor"
        class="md:hidden fixed bottom-0 left-0 right-0 flex justify-center items-center z-50"
        style="background:var(--surface); border-top:1px solid var(--border); height:54px;">
-    <div style="width:320px; height:50px; border:1px dashed var(--gold-dim); color:var(--text-muted); font-size:11px; display:flex; align-items:center; justify-content:center; letter-spacing:1px;">
+    <div style="width:min(320px,100%); height:50px; border:1px dashed var(--gold-dim); color:var(--text-muted); font-size:11px; display:flex; align-items:center; justify-content:center; letter-spacing:1px;">
       <!-- Replace with AdSense unit -->
       AD · 320×50
     </div>
