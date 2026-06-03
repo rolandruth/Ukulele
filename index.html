@@ -66,7 +66,174 @@
 </head>
 <body x-data="app()" class="min-h-screen">
 
-  <p class="p-8 text-center" style="color: var(--text-muted);">Loading…</p>
+  <!-- ── Top Banner Ad ─────────────────────────────── -->
+  <div id="ad-top-banner" class="w-full flex justify-center items-center py-1"
+       style="background:var(--surface); border-bottom:1px solid var(--border); min-height:52px;">
+    <div class="hidden md:flex items-center justify-center"
+         style="width:728px; height:90px; border:1px dashed var(--gold-dim); color:var(--text-muted); font-size:12px; letter-spacing:1px;">
+      <!-- Replace with AdSense unit -->
+      ADVERTISEMENT · 728×90
+    </div>
+    <div class="flex md:hidden items-center justify-center"
+         style="width:320px; height:50px; border:1px dashed var(--gold-dim); color:var(--text-muted); font-size:11px; letter-spacing:1px;">
+      <!-- Replace with AdSense unit -->
+      AD · 320×50
+    </div>
+  </div>
+
+  <!-- ── Header ────────────────────────────────────── -->
+  <header class="flex items-center justify-between px-4 py-3"
+          style="border-bottom:1px solid var(--border);">
+    <div>
+      <h1 class="font-bold tracking-widest uppercase text-sm" style="color:var(--gold); letter-spacing:3px;">
+        Chord Transposer
+      </h1>
+      <p class="text-xs mt-0.5" style="color:var(--text-muted);">Guitar &amp; Ukulele</p>
+    </div>
+    <button @click="toggleDarkMode()"
+            class="rounded-full p-2 transition-colors"
+            style="background:var(--surface); border:1px solid var(--border);"
+            title="Toggle dark/light mode">
+      <span x-text="darkMode ? '☀️' : '🌙'" class="text-base"></span>
+    </button>
+  </header>
+
+  <!-- ── Sticky Control Bar ────────────────────────── -->
+  <div class="sticky top-0 z-40 px-3 py-2 flex flex-wrap items-center gap-2"
+       style="background:var(--surface); border-bottom:1px solid var(--border);">
+
+    <!-- Semitone buttons -->
+    <button @click="transposeDown()"
+            class="px-3 py-1.5 rounded text-sm font-bold transition-colors"
+            style="background:var(--bg); border:1px solid var(--gold); color:var(--gold);">
+      −1
+    </button>
+    <button @click="transposeUp()"
+            class="px-3 py-1.5 rounded text-sm font-bold transition-colors"
+            style="background:var(--gold); color:#0d0d14;">
+      +1
+    </button>
+
+    <!-- Key indicator -->
+    <span class="text-xs font-mono px-2 py-1 rounded"
+          style="background:var(--bg); border:1px solid var(--border); color:var(--text-muted);"
+          x-text="keyIndicator"></span>
+
+    <!-- Reset -->
+    <button @click="resetSemitones()"
+            class="text-xs underline"
+            style="color:var(--text-muted);"
+            x-show="semitones !== 0">
+      reset
+    </button>
+
+    <!-- Sharp/Flat toggle -->
+    <button @click="togglePreference()"
+            class="px-3 py-1.5 rounded text-sm font-mono transition-colors"
+            style="background:var(--bg); border:1px solid var(--border); color:var(--text);"
+            :title="'Current: ' + preference">
+      <span x-text="preference === 'sharp' ? '♯' : '♭'"></span>
+    </button>
+
+    <!-- Font size -->
+    <div class="flex rounded overflow-hidden" style="border:1px solid var(--border);">
+      <template x-for="sz in ['sm','md','lg']">
+        <button @click="setFontSize(sz)"
+                class="px-2.5 py-1 text-xs font-mono transition-colors"
+                :style="fontSize === sz
+                  ? 'background:var(--gold);color:#0d0d14;'
+                  : 'background:var(--bg);color:var(--text-muted);'"
+                x-text="sz.toUpperCase()">
+        </button>
+      </template>
+    </div>
+
+    <!-- Auto-scroll -->
+    <button @click="toggleAutoScroll()"
+            class="px-3 py-1.5 rounded text-xs font-mono transition-colors"
+            :style="autoScroll
+              ? 'background:#1e2d1a;border:1px solid #4a9b3a;color:#4a9b3a;'
+              : 'background:var(--bg);border:1px solid var(--border);color:var(--text-muted);'">
+      <span x-text="autoScroll ? '⏸ Scroll' : '▶ Scroll'"></span>
+    </button>
+
+    <!-- Speed slider -->
+    <div class="flex items-center gap-1" x-show="autoScroll">
+      <span class="text-xs" style="color:var(--text-muted);">Speed</span>
+      <input type="range" min="1" max="5" x-model.number="scrollSpeed"
+             class="w-20 accent-yellow-500" style="cursor:pointer;" />
+    </div>
+
+    <!-- Wake lock indicator -->
+    <span x-show="wakeLock !== null" class="text-xs" style="color:var(--text-muted);" title="Screen will stay on">☀ On</span>
+  </div>
+
+  <!-- ── Split Pane ─────────────────────────────────── -->
+  <div id="split-pane" class="flex flex-col md:flex-row" style="height: calc(100vh - 220px); min-height: 400px;">
+
+    <!-- Input Pane -->
+    <div class="flex flex-col" style="flex:1; border-right:1px solid var(--border);">
+      <div class="px-3 py-1.5 text-xs font-mono tracking-widest uppercase"
+           style="background:var(--surface); border-bottom:1px solid var(--border); color:var(--text-muted);">
+        Input
+      </div>
+      <textarea
+        x-model="input"
+        class="flex-1 resize-none p-3 font-mono text-sm outline-none"
+        style="background:var(--bg); color:var(--text); border:none; font-family:'Courier New',Courier,monospace; line-height:1.8;"
+        placeholder="Paste chord sheet here…"
+        spellcheck="false"
+      ></textarea>
+
+      <!-- Sidebar ad — desktop only, below input -->
+      <div id="ad-sidebar-left" class="hidden md:flex items-center justify-center"
+           style="height:250px; min-height:250px; border-top:1px solid var(--border); background:var(--surface);">
+        <div style="width:300px; height:250px; border:1px dashed var(--gold-dim); color:var(--text-muted); font-size:11px; display:flex; align-items:center; justify-content:center; letter-spacing:1px;">
+          <!-- Replace with AdSense unit -->
+          ADVERTISEMENT · 300×250
+        </div>
+      </div>
+    </div>
+
+    <!-- Output Pane -->
+    <div class="flex flex-col" style="flex:1;">
+      <div class="px-3 py-1.5 text-xs font-mono tracking-widest uppercase flex items-center justify-between"
+           style="background:var(--surface); border-bottom:1px solid var(--border); color:var(--text-muted);">
+        <span>Output</span>
+        <span x-text="semitones !== 0 ? (semitones > 0 ? '+' : '') + semitones + ' semitones' : 'Original key'"
+              style="color:var(--gold-dim);"></span>
+      </div>
+      <div id="output-pane"
+           class="flex-1 overflow-y-auto p-3 pb-16"
+           :class="{
+             'text-sm':   fontSize === 'sm',
+             'text-base': fontSize === 'md',
+             'text-lg':   fontSize === 'lg'
+           }"
+           style="background:var(--bg); touch-action:pan-y; overflow-x:hidden;"
+           x-html="parsedHtml">
+      </div>
+
+      <!-- Sidebar ad — desktop only, below output -->
+      <div id="ad-sidebar-right" class="hidden md:flex items-center justify-center"
+           style="height:250px; min-height:250px; border-top:1px solid var(--border); background:var(--surface);">
+        <div style="width:300px; height:250px; border:1px dashed var(--gold-dim); color:var(--text-muted); font-size:11px; display:flex; align-items:center; justify-content:center; letter-spacing:1px;">
+          <!-- Replace with AdSense unit -->
+          ADVERTISEMENT · 300×250
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Mobile Bottom Anchor Ad ───────────────────── -->
+  <div id="ad-bottom-anchor"
+       class="md:hidden fixed bottom-0 left-0 right-0 flex justify-center items-center z-50"
+       style="background:var(--surface); border-top:1px solid var(--border); height:54px;">
+    <div style="width:320px; height:50px; border:1px dashed var(--gold-dim); color:var(--text-muted); font-size:11px; display:flex; align-items:center; justify-content:center; letter-spacing:1px;">
+      <!-- Replace with AdSense unit -->
+      AD · 320×50
+    </div>
+  </div>
 
   <script>
 // ── Chromatic scale ──────────────────────────────────────────────────────────
