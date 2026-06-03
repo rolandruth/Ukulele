@@ -84,7 +84,7 @@ function transposeChord(chord, semitones, preference) {
 }
 
 // ── Line classifier ───────────────────────────────────────────────────────────
-const CHORD_TOKEN_RE = /^[A-G][#b]?(?:maj7?|min7?|m|7|9|11|13|sus[24]|dim|aug|add9)?$/;
+const CHORD_TOKEN_RE = /^[A-G][#b]?(?:maj7?|min7?|m7|m|7|9|11|13|sus[24]|dim|aug|add9)?$/;
 
 function isChordLine(line) {
   const tokens = line.trim().split(/\s+/).filter(Boolean);
@@ -101,7 +101,7 @@ function transposeChordLine(line, semitones, preference) {
     // Only attempt chord match at start or after whitespace
     if (i === 0 || /\s/.test(line[i - 1])) {
       const rest = line.slice(i);
-      const cm = rest.match(/^([A-G][#b]?(?:maj7?|min7?|m|7|9|11|13|sus[24]|dim|aug|add9)?)(?=\s|$|\/)/);
+      const cm = rest.match(/^([A-G][#b]?(?:maj7?|min7?|m7|m|7|9|11|13|sus[24]|dim|aug|add9)?)(?=\s|$|\/)/);
       if (cm) {
         const orig = cm[1];
         const transposed = transposeChord(orig, semitones, preference);
@@ -141,9 +141,11 @@ function parseLines(text, semitones, preference) {
 
 // ── Key indicator ─────────────────────────────────────────────────────────────
 function getKeyIndicator(text, semitones, preference) {
-  const m = text.match(/[A-G][#b]?(?:maj7?|min7?|m|7|9|11|13|sus[24]|dim|aug|add9)?/);
-  if (!m) return 'Key: —';
-  const root = m[0].match(/^[A-G][#b]?/)[0];
+  const firstChordLine = text.split('\n').find(l => isChordLine(l));
+  if (!firstChordLine) return 'Key: —';
+  const rootMatch = firstChordLine.trim().match(/^([A-G][#b]?)/);
+  if (!rootMatch) return 'Key: —';
+  const root = rootMatch[1];
   if (semitones === 0) return `Key: ${root}`;
   const transposed = transposeChord(root, semitones, preference);
   return `Key: ${root} → ${transposed} (${semitones > 0 ? '+' : ''}${semitones})`;
@@ -170,6 +172,10 @@ function getKeyIndicator(text, semitones, preference) {
   console.assert(!isChordLine('Yesterday all my troubles'), 'lyric line');
   console.assert(!isChordLine('Play the Am chord here'),    'mixed → lyric');
   console.assert(!isChordLine(''),                    'empty line');
+  console.assert(isChordLine('Am7  Dm7  G7  Cmaj7'), 'm7 chord line');
+  const testLine = transposeChordLine('Am7  Dm7  G7', 2, 'sharp');
+  console.assert(testLine.includes('Bm7'), 'Am7+2=Bm7 in chord line');
+  console.assert(testLine.includes('Em7'), 'Dm7+2=Em7 in chord line');
   console.log('✓ All engine tests passed');
 })();
 
