@@ -62,11 +62,120 @@
   <p class="p-8 text-center" style="color: var(--text-muted);">Loading…</p>
 
   <script>
-    function app() {
-      return {
-        init() { console.log('Alpine ready'); }
-      };
+// ── Chromatic scale ──────────────────────────────────────────────────────────
+const CHROMATIC_SCALE = [
+  { sharp: 'C',  flat: 'C'  }, { sharp: 'C#', flat: 'Db' },
+  { sharp: 'D',  flat: 'D'  }, { sharp: 'D#', flat: 'Eb' },
+  { sharp: 'E',  flat: 'E'  }, { sharp: 'F',  flat: 'F'  },
+  { sharp: 'F#', flat: 'Gb' }, { sharp: 'G',  flat: 'G'  },
+  { sharp: 'G#', flat: 'Ab' }, { sharp: 'A',  flat: 'A'  },
+  { sharp: 'A#', flat: 'Bb' }, { sharp: 'B',  flat: 'B'  }
+];
+
+// ── Core transposer ──────────────────────────────────────────────────────────
+function transposeChord(chord, semitones, preference) {
+  const m = chord.match(/^([A-G][#b]?)(.*)/s);
+  if (!m) return chord;
+  const [, root, suffix] = m;
+  const idx = CHROMATIC_SCALE.findIndex(n => n.sharp === root || n.flat === root);
+  if (idx === -1) return chord;
+  const newIdx = ((idx + semitones) % 12 + 12) % 12;
+  return CHROMATIC_SCALE[newIdx][preference] + suffix;
+}
+
+// ── Line classifier ───────────────────────────────────────────────────────────
+const CHORD_TOKEN_RE = /^[A-G][#b]?(?:maj7?|min7?|m|7|9|11|13|sus[24]|dim|aug|add9)?$/;
+
+function isChordLine(line) {
+  const tokens = line.trim().split(/\s+/).filter(Boolean);
+  if (!tokens.length) return false;
+  const chords = tokens.filter(t => CHORD_TOKEN_RE.test(t));
+  return chords.length / tokens.length >= 0.5;
+}
+
+// ── Chord line renderer (with spacing compensation) ───────────────────────────
+function transposeChordLine(line, semitones, preference) {
+  let result = '';
+  let i = 0;
+  while (i < line.length) {
+    // Only attempt chord match at start or after whitespace
+    if (i === 0 || /\s/.test(line[i - 1])) {
+      const rest = line.slice(i);
+      const cm = rest.match(/^([A-G][#b]?(?:maj7?|min7?|m|7|9|11|13|sus[24]|dim|aug|add9)?)(?=\s|$|\/)/);
+      if (cm) {
+        const orig = cm[1];
+        const transposed = transposeChord(orig, semitones, preference);
+        // Consume trailing spaces
+        let spaceEnd = i + orig.length;
+        while (spaceEnd < line.length && line[spaceEnd] === ' ') spaceEnd++;
+        let spaces = line.slice(i + orig.length, spaceEnd);
+        // Compensate for length change
+        const diff = orig.length - transposed.length;
+        if (diff > 0) spaces += ' '.repeat(diff);
+        else if (diff < 0 && spaces.length > 1) spaces = spaces.slice(Math.min(-diff, spaces.length - 1));
+        result += `<span class="chord-span">${transposed}</span>${spaces}`;
+        i = spaceEnd;
+        continue;
+      }
     }
+    result += line[i] === '<' ? '&lt;' : line[i] === '>' ? '&gt;' : line[i] === '&' ? '&amp;' : line[i];
+    i++;
+  }
+  return result;
+}
+
+// ── HTML escaper ─────────────────────────────────────────────────────────────
+function escHtml(s) {
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+// ── Full parser ───────────────────────────────────────────────────────────────
+function parseLines(text, semitones, preference) {
+  if (!text.trim()) return '<span class="line lyric-line" style="color:var(--text-muted);font-style:italic;">Paste a chord sheet into the input pane…</span>';
+  return text.split('\n').map(line => {
+    if (!line.trim()) return '<span class="line">&nbsp;</span>';
+    if (isChordLine(line)) return `<span class="line chord-line">${transposeChordLine(line, semitones, preference)}</span>`;
+    return `<span class="line lyric-line">${escHtml(line)}</span>`;
+  }).join('');
+}
+
+// ── Key indicator ─────────────────────────────────────────────────────────────
+function getKeyIndicator(text, semitones, preference) {
+  const m = text.match(/[A-G][#b]?(?:maj7?|min7?|m|7|9|11|13|sus[24]|dim|aug|add9)?/);
+  if (!m) return 'Key: —';
+  const root = m[0].match(/^[A-G][#b]?/)[0];
+  if (semitones === 0) return `Key: ${root}`;
+  const transposed = transposeChord(root, semitones, preference);
+  return `Key: ${root} → ${transposed} (${semitones > 0 ? '+' : ''}${semitones})`;
+}
+
+// ── Inline tests (check browser console) ─────────────────────────────────────
+(function runTests() {
+  const eq = (a, b, msg) => console.assert(a === b, `FAIL: ${msg} — got "${a}", expected "${b}"`);
+  eq(transposeChord('C',     2,  'sharp'), 'D',     'C+2=D');
+  eq(transposeChord('C',     2,  'flat'),  'D',     'C+2=D (flat pref)');
+  eq(transposeChord('B',     1,  'sharp'), 'C',     'B+1=C wrap');
+  eq(transposeChord('C',    -1,  'flat'),  'B',     'C-1=B');
+  eq(transposeChord('F#',    1,  'sharp'), 'G',     'F#+1=G');
+  eq(transposeChord('Gb',    1,  'sharp'), 'G',     'Gb+1=G enharmonic');
+  eq(transposeChord('Am7',   2,  'sharp'), 'Bm7',   'Am7+2 keeps suffix');
+  eq(transposeChord('Cmaj7', 1,  'sharp'), 'C#maj7','Cmaj7+1 sharp');
+  eq(transposeChord('Bb',    2,  'flat'),  'C',     'Bb+2=C');
+  eq(transposeChord('Eb',   -1,  'flat'),  'D',     'Eb-1=D');
+  eq(transposeChord('G',    12,  'sharp'), 'G',     'G+12 octave wrap');
+  eq(transposeChord('G',   -12,  'sharp'), 'G',     'G-12 octave wrap');
+  eq(transposeChord('A#',    1,  'flat'),  'B',     'A#+1=B');
+  console.assert(isChordLine('Am  C  G  F'),          'chord line: all chords');
+  console.assert(isChordLine('Am'),                   'chord line: single chord');
+  console.assert(!isChordLine('Yesterday all my troubles'), 'lyric line');
+  console.assert(!isChordLine('Play the Am chord here'),    'mixed → lyric');
+  console.assert(!isChordLine(''),                    'empty line');
+  console.log('✓ All engine tests passed');
+})();
+
+function app() {
+  return { init() {} };
+}
   </script>
 </body>
 </html>
