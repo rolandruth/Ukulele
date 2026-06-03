@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chord Transposer — Guitar & Ukulele</title>
+  <meta name="description" content="Free online chord transposer for guitar and ukulele. Instantly shift any chord chart up or down by semitone with auto-scroll and dark mode." />
+
+  <!-- Tailwind Play CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { darkMode: 'class' }
+  </script>
+
+  <!-- Alpine.js -->
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.5/dist/cdn.min.js"></script>
+
+  <style>
+    /* ── Color tokens ── */
+    :root {
+      --bg:         #0d0d14;
+      --surface:    #111120;
+      --border:     #1e1e2e;
+      --gold:       #c9a84c;
+      --gold-dim:   rgba(201,168,76,0.27);
+      --text:       #cccccc;
+      --text-muted: #666666;
+      --chord:      #c9a84c;
+      --lyric:      #aaaaaa;
+    }
+
+    /* Light mode overrides */
+    html:not(.dark) {
+      --bg:         #faf9f6;
+      --surface:    #f0ede8;
+      --border:     #ddd8ce;
+      --gold:       #a8832a;
+      --gold-dim:   rgba(168,131,42,0.2);
+      --text:       #1a1a1a;
+      --text-muted: #888888;
+      --chord:      #a8832a;
+      --lyric:      #444444;
+    }
+
+    body { background-color: var(--bg); color: var(--text); transition: background-color 0.2s, color 0.2s; }
+
+    /* Chord display */
+    .chord-span { color: var(--chord); font-weight: 600; }
+    .line        { font-family: 'Courier New', Courier, monospace; white-space: pre; line-height: 1.8; font-size: inherit; display: block; }
+    .lyric-line  { color: var(--lyric); }
+    .chord-line  { color: var(--chord); }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar       { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: var(--surface); }
+    ::-webkit-scrollbar-thumb { background: var(--gold-dim); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--gold); }
+  </style>
+</head>
+<body x-data="app()" class="min-h-screen">
+
+  <p class="p-8 text-center" style="color: var(--text-muted);">Loading…</p>
+
+  <script>
+    function app() {
+      return {
+        init() { console.log('Alpine ready'); }
+      };
+    }
+  </script>
+</body>
+</html>
