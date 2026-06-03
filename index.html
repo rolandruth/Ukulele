@@ -12,6 +12,13 @@
     tailwind.config = { darkMode: 'class' }
   </script>
 
+  <!-- Prevent dark-mode flash -->
+  <script>
+    if (localStorage.getItem('ct_dark') !== 'false') {
+      document.documentElement.classList.add('dark');
+    }
+  </script>
+
   <!-- Alpine.js -->
   <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.5/dist/cdn.min.js"></script>
 
@@ -179,8 +186,136 @@ function getKeyIndicator(text, semitones, preference) {
   console.log('✓ All engine tests passed');
 })();
 
+const SAMPLE_SONG = `Am      C       D        F
+There is a house in New Orleans
+Am      C       E
+They call the Rising Sun
+Am      C       D          F
+And it's been the ruin of many a poor boy
+Am      E       Am
+And God I know I'm one
+
+Am      C       D        F
+My mother was a tailor
+Am          E
+She sewed my new blue jeans
+Am      C       D        F
+My father was a gamblin' man
+Am      E       Am
+Down in New Orleans`;
+
 function app() {
-  return { init() {} };
+  return {
+    input:       '',
+    semitones:   0,
+    preference:  'sharp',
+    fontSize:    'md',
+    darkMode:    true,
+    autoScroll:  false,
+    scrollSpeed: 2,
+    wakeLock:    null,
+    _scrollFrame: null,
+
+    init() {
+      this.input       = localStorage.getItem('ct_input')        ?? SAMPLE_SONG;
+      this.darkMode    = localStorage.getItem('ct_dark')         !== 'false';
+      this.fontSize    = localStorage.getItem('ct_fontsize')     ?? 'md';
+      this.scrollSpeed = parseInt(localStorage.getItem('ct_scroll_speed') ?? '2');
+      this.preference  = localStorage.getItem('ct_preference')  ?? 'sharp';
+      this.semitones   = parseInt(localStorage.getItem('ct_semitones')    ?? '0');
+
+      // Apply dark mode to <html>
+      document.documentElement.classList.toggle('dark', this.darkMode);
+
+      // Persist on change
+      this.$watch('input',       v => localStorage.setItem('ct_input', v));
+      this.$watch('fontSize',    v => localStorage.setItem('ct_fontsize', v));
+      this.$watch('scrollSpeed', v => localStorage.setItem('ct_scroll_speed', v));
+      this.$watch('preference',  v => localStorage.setItem('ct_preference', v));
+      this.$watch('semitones',   v => localStorage.setItem('ct_semitones', v));
+      this.$watch('darkMode', v => {
+        localStorage.setItem('ct_dark', v);
+        document.documentElement.classList.toggle('dark', v);
+      });
+
+      // Release wake lock when page hidden
+      document.addEventListener('visibilitychange', () => {
+        if (document.hidden && this.wakeLock) {
+          this.wakeLock.release().catch(() => {});
+          this.wakeLock = null;
+        }
+      });
+    },
+
+    get parsedHtml() {
+      return parseLines(this.input, this.semitones, this.preference);
+    },
+
+    get keyIndicator() {
+      return getKeyIndicator(this.input, this.semitones, this.preference);
+    },
+
+    transposeUp()    { this.semitones++; },
+    transposeDown()  { this.semitones--; },
+    resetSemitones() { this.semitones = 0; },
+
+    togglePreference() {
+      this.preference = this.preference === 'sharp' ? 'flat' : 'sharp';
+    },
+
+    setFontSize(size) { this.fontSize = size; },
+
+    toggleDarkMode() { this.darkMode = !this.darkMode; },
+
+    toggleAutoScroll() {
+      this.autoScroll = !this.autoScroll;
+      if (this.autoScroll) { this._startScroll(); this._requestWakeLock(); }
+      else                 { this._stopScroll();  this._releaseWakeLock(); }
+    },
+
+    _startScroll() {
+      const pane = document.getElementById('output-pane');
+      if (!pane) return;
+      const speeds = [0.3, 0.6, 0.9, 1.2, 1.5];
+      let paused = false;
+      let resumeTimeout = null;
+
+      const pause = () => {
+        paused = true;
+        clearTimeout(resumeTimeout);
+        resumeTimeout = setTimeout(() => { paused = false; }, 2000);
+      };
+      pane.addEventListener('touchstart', pause, { passive: true });
+      pane.addEventListener('mousedown',  pause);
+      pane._pauseCleanup = () => {
+        pane.removeEventListener('touchstart', pause);
+        pane.removeEventListener('mousedown',  pause);
+      };
+
+      const tick = () => {
+        if (!this.autoScroll) return;
+        if (!paused) pane.scrollTop += speeds[this.scrollSpeed - 1];
+        this._scrollFrame = requestAnimationFrame(tick);
+      };
+      this._scrollFrame = requestAnimationFrame(tick);
+    },
+
+    _stopScroll() {
+      if (this._scrollFrame) { cancelAnimationFrame(this._scrollFrame); this._scrollFrame = null; }
+      const pane = document.getElementById('output-pane');
+      if (pane && pane._pauseCleanup) { pane._pauseCleanup(); delete pane._pauseCleanup; }
+    },
+
+    async _requestWakeLock() {
+      if ('wakeLock' in navigator) {
+        try { this.wakeLock = await navigator.wakeLock.request('screen'); } catch (_) {}
+      }
+    },
+
+    _releaseWakeLock() {
+      if (this.wakeLock) { this.wakeLock.release().catch(() => {}); this.wakeLock = null; }
+    }
+  };
 }
   </script>
 </body>
