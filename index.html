@@ -62,6 +62,21 @@
     ::-webkit-scrollbar-track { background: var(--surface); }
     ::-webkit-scrollbar-thumb { background: var(--gold-dim); border-radius: 3px; }
     ::-webkit-scrollbar-thumb:hover { background: var(--gold); }
+
+    /* Split pane mobile sizing */
+    @media (max-width: 767px) {
+      #split-pane { height: auto !important; }
+      #split-pane > div:first-child {
+        height: 35vh;
+        flex: none !important;
+        border-right: none !important;
+        border-bottom: 1px solid var(--border);
+      }
+      #split-pane > div:last-child {
+        height: calc(65vh - 54px);
+        flex: none !important;
+      }
+    }
   </style>
 </head>
 <body x-data="app()" class="min-h-screen">
