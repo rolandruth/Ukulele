@@ -332,13 +332,134 @@
   <!-- Privacy Policy link is required for AdSense approval.         -->
   <!-- Create a privacy.html (or use a hosted policy generator) and  -->
   <!-- update the href below before submitting your site to AdSense. -->
+  <!-- ── How-to / Content Section (required for AdSense approval) ── -->
+  <section style="border-top:1px solid var(--border); background:var(--surface);">
+    <div class="max-w-4xl mx-auto px-6 py-10">
+
+      <h2 class="text-lg font-bold mb-6" style="color:var(--gold); letter-spacing:2px; text-transform:uppercase;">How to Use the Chord Transposer</h2>
+
+      <div class="grid md:grid-cols-4 gap-6 mb-10">
+        <div>
+          <div class="text-2xl mb-2">📋</div>
+          <h3 class="font-semibold text-sm mb-1" style="color:var(--text);">1. Paste your sheet</h3>
+          <p class="text-xs" style="color:var(--text-muted); line-height:1.7;">Copy any chord chart from a website, songbook, or your notes and paste it into the Input panel.</p>
+        </div>
+        <div>
+          <div class="text-2xl mb-2">🎸</div>
+          <h3 class="font-semibold text-sm mb-1" style="color:var(--text);">2. Transpose</h3>
+          <p class="text-xs" style="color:var(--text-muted); line-height:1.7;">Hit <strong style="color:var(--gold);">+1</strong> or <strong style="color:var(--gold);">−1</strong> to shift every chord up or down by one semitone. The key indicator updates live.</p>
+        </div>
+        <div>
+          <div class="text-2xl mb-2">♯♭</div>
+          <h3 class="font-semibold text-sm mb-1" style="color:var(--text);">3. Choose sharps or flats</h3>
+          <p class="text-xs" style="color:var(--text-muted); line-height:1.7;">Toggle between sharp (C#) and flat (Db) notation to match your instrument or teacher's preference.</p>
+        </div>
+        <div>
+          <div class="text-2xl mb-2">▶</div>
+          <h3 class="font-semibold text-sm mb-1" style="color:var(--text);">4. Auto-scroll while you play</h3>
+          <p class="text-xs" style="color:var(--text-muted); line-height:1.7;">Enable Auto-Scroll and adjust the speed slider to follow along hands-free. The screen stays on automatically.</p>
+        </div>
+      </div>
+
+      <div class="grid md:grid-cols-2 gap-10">
+        <div>
+          <h2 class="text-base font-bold mb-3" style="color:var(--gold); letter-spacing:1px; text-transform:uppercase;">What is chord transposition?</h2>
+          <p class="text-sm mb-3" style="color:var(--text-muted); line-height:1.8;">Transposition means shifting a song's chords up or down by a number of semitones — the smallest interval in Western music. If a song is in the key of G and you need to play it in A to suit a singer's voice, you transpose up 2 semitones.</p>
+          <p class="text-sm" style="color:var(--text-muted); line-height:1.8;">This tool handles all 12 notes of the chromatic scale including enharmonic equivalents (F# = Gb, A# = Bb) so the output always uses the most musically natural spelling for the chosen key.</p>
+        </div>
+        <div>
+          <h2 class="text-base font-bold mb-3" style="color:var(--gold); letter-spacing:1px; text-transform:uppercase;">Supported chord types</h2>
+          <p class="text-sm mb-2" style="color:var(--text-muted);">Works with all standard guitar and ukulele chord names:</p>
+          <div class="flex flex-wrap gap-2">
+            <template x-for="c in ['A','Bm','C#','Db','Em7','Fmaj7','G7','Asus2','Dsus4','Edim','Faug','Gadd9','Am/E','Bb','F#m7']">
+              <span class="text-xs px-2 py-0.5 rounded font-mono" style="background:var(--bg); border:1px solid var(--border); color:var(--chord);" x-text="c"></span>
+            </template>
+          </div>
+          <p class="text-xs mt-3" style="color:var(--text-muted);">Chord lines are auto-detected — just paste a standard chord sheet with chords above lyrics and the tool handles the rest.</p>
+        </div>
+      </div>
+
+      <div class="mt-10 pt-6" style="border-top:1px solid var(--border);">
+        <h2 class="text-base font-bold mb-4" style="color:var(--gold); letter-spacing:1px; text-transform:uppercase;">Frequently asked questions</h2>
+        <div class="grid md:grid-cols-2 gap-6">
+          <div>
+            <h3 class="text-sm font-semibold mb-1" style="color:var(--text);">Does it work for ukulele?</h3>
+            <p class="text-xs" style="color:var(--text-muted); line-height:1.7;">Yes — chord transposition is instrument-agnostic. The tool shifts chord names; how you finger those chords on a uke, guitar, or piano is up to you.</p>
+          </div>
+          <div>
+            <h3 class="text-sm font-semibold mb-1" style="color:var(--text);">Is my chord sheet saved?</h3>
+            <p class="text-xs" style="color:var(--text-muted); line-height:1.7;">Yes, locally. Your input and all settings are saved to your browser's localStorage. They persist after refresh but never leave your device.</p>
+          </div>
+          <div>
+            <h3 class="text-sm font-semibold mb-1" style="color:var(--text);">How many semitones to go from G to A?</h3>
+            <p class="text-xs" style="color:var(--text-muted); line-height:1.7;">Two semitones up. The key indicator at the top shows your original key and current transposition at a glance.</p>
+          </div>
+          <div>
+            <h3 class="text-sm font-semibold mb-1" style="color:var(--text);">Does it work offline?</h3>
+            <p class="text-xs" style="color:var(--text-muted); line-height:1.7;">After your first visit the page is cached by your browser and works without an internet connection — ideal for gigs and rehearsal rooms with no Wi-Fi.</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ── Footer ─────────────────────────────────────── -->
   <footer class="text-center py-3 text-xs"
           style="color:var(--text-muted); border-top:1px solid var(--border); background:var(--surface);">
-    <a href="/privacy.html"
-       style="color:var(--text-muted); text-decoration:underline;">Privacy Policy</a>
+    <button @click="showPrivacy = true"
+            style="color:var(--text-muted); text-decoration:underline; background:none; border:none; cursor:pointer; font-size:inherit;">Privacy Policy</button>
     <span style="margin:0 8px;">·</span>
     <span>Free chord transposer for guitar &amp; ukulele</span>
   </footer>
+
+  <!-- ── Privacy Policy Modal ───────────────────────── -->
+  <div x-show="showPrivacy"
+       x-transition.opacity
+       class="fixed inset-0 z-50 flex items-start justify-center p-4 pt-12 overflow-y-auto"
+       style="background:rgba(0,0,0,0.85);"
+       @click.self="showPrivacy = false">
+    <div class="w-full max-w-lg rounded-xl p-6 relative"
+         style="background:var(--surface); border:1px solid var(--border);">
+      <button @click="showPrivacy = false"
+              class="absolute top-4 right-4 text-lg"
+              style="color:var(--text-muted); background:none; border:none; cursor:pointer; line-height:1;">✕</button>
+
+      <h2 class="text-base font-bold mb-1" style="color:var(--gold); letter-spacing:2px; text-transform:uppercase;">Privacy Policy</h2>
+      <p class="text-xs mb-5" style="color:var(--text-muted);">Last updated: June 3, 2026</p>
+
+      <div class="text-sm space-y-4" style="color:var(--text-muted); line-height:1.8;">
+        <div>
+          <h3 class="font-semibold mb-1" style="color:var(--text);">Information we collect</h3>
+          <p>This site does not collect personal information. Your chord sheets and preferences (dark mode, font size, scroll speed, transposition) are saved only in your browser's <code>localStorage</code> and never transmitted to any server.</p>
+        </div>
+        <div>
+          <h3 class="font-semibold mb-1" style="color:var(--text);">Advertising</h3>
+          <p>This site uses Google AdSense to display advertisements. Google may use cookies and similar technologies to serve ads based on your interests and prior visits to this or other websites. To opt out of personalised advertising, visit <a href="https://adssettings.google.com" target="_blank" rel="noopener" style="color:var(--gold); text-decoration:underline;">Google Ad Settings</a>.</p>
+        </div>
+        <div>
+          <h3 class="font-semibold mb-1" style="color:var(--text);">Cookies</h3>
+          <p>This site does not set its own cookies. Google AdSense may set third-party cookies for advertising purposes as described in <a href="https://policies.google.com/privacy" target="_blank" rel="noopener" style="color:var(--gold); text-decoration:underline;">Google's Privacy Policy</a>.</p>
+        </div>
+        <div>
+          <h3 class="font-semibold mb-1" style="color:var(--text);">Third-party services</h3>
+          <p>The page loads Tailwind CSS and Alpine.js from CDN providers (jsDelivr / Tailwind CDN). These providers may log standard HTTP request data (IP address, browser type) as part of normal CDN operation.</p>
+        </div>
+        <div>
+          <h3 class="font-semibold mb-1" style="color:var(--text);">Your data</h3>
+          <p>All locally stored data can be cleared at any time via your browser settings (Clear site data / localStorage). There is no account, no server, and no way for us to access anything you type into this tool.</p>
+        </div>
+        <div>
+          <h3 class="font-semibold mb-1" style="color:var(--text);">Contact</h3>
+          <p>For privacy questions: <a href="mailto:roland.ruth@gmail.com" style="color:var(--gold); text-decoration:underline;">roland.ruth@gmail.com</a></p>
+        </div>
+      </div>
+
+      <button @click="showPrivacy = false"
+              class="mt-6 w-full py-2 rounded text-sm font-semibold"
+              style="background:var(--gold); color:#0d0d14;">Close</button>
+    </div>
+  </div>
 
   <script>
 // ── Chromatic scale ──────────────────────────────────────────────────────────
@@ -482,6 +603,7 @@ function app() {
     semitones:   0,
     preference:  'sharp',
     fontSize:    'md',
+    showPrivacy: false,
     darkMode:    true,
     autoScroll:  false,
     scrollSpeed: 2,
